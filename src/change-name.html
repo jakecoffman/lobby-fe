@@ -1,0 +1,36 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="change-name">
+  <template>
+    <style include="shared-styles">
+
+    </style>
+
+    <paper-dialog id="dialog">
+      <h2>Header</h2>
+      <div>Body</div>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm autofocus>Accept</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'change-name',
+      properties: {
+        name: {
+          type: String,
+          notify: true
+        }
+      },
+      open: function() {
+        this.$.dialog.open();
+      }
+    });
+  </script>
+</dom-module>

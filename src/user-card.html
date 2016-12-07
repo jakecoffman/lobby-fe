@@ -1,0 +1,50 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="user-card">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+
+                padding: 10px;
+            }
+            #container {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+            }
+            #name {
+                white-space: nowrap;
+            }
+        </style>
+        <app-toolbar id="container">
+            <iron-image src="../images/user.jpg" style="width:100px; height:100px;" sizing="contain"></iron-image>
+            <span id="name">{{name}}</span>
+        </app-toolbar>
+    </template>
+    <script>
+      Polymer({
+        is: "user-card",
+        properties: {
+          user: {
+            type: Object
+          },
+          name: {
+            type: String,
+            computed: '_name(user)'
+          }
+        },
+        ready: function () {
+
+        },
+        _name: function(user) {
+          if (user.name == "") {
+            return "Guest " + user.id.slice(0, 6);
+          }
+          return user.name;
+        }
+      })
+    </script>
+</dom-module>

@@ -1,0 +1,44 @@
+<dom-module id="web-socket">
+    <template>
+
+    </template>
+    <script>
+      Polymer({
+        is: "web-socket",
+        ws: null,
+        properties: {
+          protocol: {
+            type: String
+          },
+          url: {
+            type: String
+          }
+        },
+        ready: function () {
+          this.ws = new WebSocket(this.url, this.protocol);
+          this.ws.onerror = this.onError.bind(this);
+          this.ws.onclose = this.onClose.bind(this);
+          this.ws.onopen = this.onOpen.bind(this);
+          this.ws.onmessage = this.onMessage.bind(this);
+        },
+        onError: function (error) {
+          this.fire('onerror', error);
+        },
+        onClose: function (event) {
+          this.fire('onclose', event);
+        },
+        onOpen: function (event) {
+          this.fire('onopen', event);
+        },
+        onMessage: function (event) {
+          this.fire('onmessage', JSON.parse(event.data));
+        },
+        send: function (message) {
+          this.ws.send(message);
+        },
+        close: function () {
+          this.ws.close();
+        }
+      })
+    </script>
+</dom-module>
