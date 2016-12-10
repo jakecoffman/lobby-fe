@@ -15,11 +15,7 @@
           }
         },
         ready: function () {
-          this.ws = new WebSocket(this.url, this.protocol);
-          this.ws.onerror = this.onError.bind(this);
-          this.ws.onclose = this.onClose.bind(this);
-          this.ws.onopen = this.onOpen.bind(this);
-          this.ws.onmessage = this.onMessage.bind(this);
+          this.connect();
         },
         onError: function (error) {
           this.fire('onerror', error);
@@ -38,6 +34,13 @@
         },
         close: function () {
           this.ws.close();
+        },
+        connect: function() {
+          this.ws = new WebSocket(this.url, this.protocol);
+          this.ws.onerror = this.onError.bind(this);
+          this.ws.onclose = this.onClose.bind(this);
+          this.ws.onopen = this.onOpen.bind(this);
+          this.ws.onmessage = this.onMessage.bind(this);
         }
       })
     </script>

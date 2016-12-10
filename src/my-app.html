@@ -50,9 +50,14 @@
             }
 
             .drawer-list a.iron-selected {
-                color: black;
+                color: white;
                 background-color: var(--accent-color);
                 font-weight: bold;
+            }
+
+            #lost a{
+              float: right;
+              color: var(--accent-color);
             }
         </style>
 
@@ -72,15 +77,15 @@
                 <iron-selector selected="[[page]]" class="drawer-list" attr-for-selected="name" role="navigation">
                     <a name="index" href="/index">Home</a>
                     <template is="dom-if" if="{{!inGame}}">
-                        <a name="view2" href="/view1">New game</a>
-                        <a name="view2" href="/view2">Join game</a>
+                        <a name="new" href="/new">New game</a>
+                        <a name="join" href="/join">Join game</a>
                     </template>
                 </iron-selector>
 
-                <div class="drawer-list">
-                    <a href="" on-tap="changeName">Change name</a>
+                <div class="drawer-list" style="margin: 0;">
+                    <span><a href="" on-tap="changeName">Change name</a></span>
                     <template is="dom-if" if="{{inGame}}">
-                        <a href="">Leave game</a>
+                        <span><a href="">Leave game</a></span>
                     </template>
                 </div>
             </app-drawer>
@@ -100,28 +105,27 @@
                         attr-for-selected="name"
                         fallback-selection="view404"
                         role="main">
-                    <my-index name="index" in-game="{{inGame}}"></my-index>
-                    <my-view1 name="view1"></my-view1>
-                    <my-view2 name="view2"></my-view2>
-                    <my-view3 name="view3"></my-view3>
-                    <my-view404 name="view404"></my-view404>
+                    <page-index name="index" in-game="{{inGame}}"></page-index>
+                    <page-new name="new"></page-new>
+                    <page-join name="join"></page-join>
+                    <page-view404 name="view404"></page-view404>
                 </iron-pages>
             </app-header-layout>
         </app-drawer-layout>
 
         <change-name id="changename" name="{{player.name}}"></change-name>
 
-        <web-socket url="ws://localhost:8444/ws"></web-socket>
-        <paper-toast id="toast" text=""></paper-toast>
-        <paper-toast id="toast-lost" text="Lost Connection">
-            <a href="">Retry</a>
+        <web-socket id="ws" url="ws://localhost:8444/ws"></web-socket>
+        <paper-toast id="notifications" text=""></paper-toast>
+        <paper-toast id="lost" text="Can't connect to server">
+            <a href="" on-tap="connect">Retry</a>
         </paper-toast>
     </template>
 
     <script>
       Polymer({
         is: 'my-app',
-
+        connected: false,
         properties: {
           page: {
             type: String,
@@ -151,10 +155,13 @@
           onmessage: 'onMessage'
         },
 
+        connect: function() {
+          this.$.lost.text = "Connecting...";
+          this.$.ws.connect();
+        },
+
         onOpen: function (event) {
-          this.$.toast.text = "Connected";
-          this.$.toast.duration = 3000;
-          this.$.toast.open();
+          this.$.lost.close();
         },
 
         onMessage: function (e) {
@@ -176,9 +183,9 @@
         },
 
         onClose: function (event) {
-          this.$.toast.text = "connection lost";
-          this.$.toast.duration = 0;
-          this.$.toast.open();
+          this.$.lost.text = "Can't connect to server";
+          this.$.lost.duration = 0;
+          this.$.lost.open();
         },
 
         _routePageChanged: function (page) {
@@ -187,7 +194,7 @@
 
         _pageChanged: function (page) {
           // Load page import on demand. Show 404 page if fails
-          var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+          var resolvedPageUrl = this.resolveUrl('page-' + page + '.html');
           this.importHref(resolvedPageUrl, null, this._showPage404, true);
         },
 

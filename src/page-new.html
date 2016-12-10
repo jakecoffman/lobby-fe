@@ -1,0 +1,79 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="page-new">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+
+      paper-card {
+        margin-bottom: 10px;
+      }
+
+      paper-card {
+        --paper-card-header-text: white;
+      }
+    </style>
+
+    <paper-card heading="Spyfall" image="http://placehold.it/700x150/FFC107/000000">
+      <div class="card-content">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
+      </div>
+      <div class="card-actions">
+        <paper-button>Play</paper-button>
+      </div>
+    </paper-card>
+    <paper-card heading="The Resistance" image="http://placehold.it/700x150/F44336/000000">
+      <div class="card-content">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
+      </div>
+      <div class="card-actions">
+        <paper-button>Play</paper-button>
+      </div>
+    </paper-card>
+    <paper-card heading="Set" image="http://placehold.it/700x150/673AB7/000000">
+      <div class="card-content">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
+      </div>
+      <div class="card-actions">
+        <paper-button>Play</paper-button>
+      </div>
+    </paper-card>
+    <paper-card heading="Tic Tac Toe" image="http://placehold.it/700x150/4CAF50/000000">
+      <div class="card-content">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
+      </div>
+      <div class="card-actions">
+        <paper-button>Play</paper-button>
+      </div>
+    </paper-card>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'page-new',
+      properties: {
+        name: String
+      },
+      listeners: {
+        onopen: 'onOpen',
+        onclose: 'onClose',
+        onmessage: 'onMessage'
+      },
+      onOpen: function(e) {
+        console.log("In view1", e);
+      },
+      onClose: function(e) {
+        console.log("In view1", e);
+      },
+      onMessage: function(msg) {
+        console.log("In view1", msg);
+      }
+    });
+  </script>
+</dom-module>
