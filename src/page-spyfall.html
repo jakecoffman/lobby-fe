@@ -1,0 +1,36 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="page-spyfall">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+                padding: 10px;
+            }
+        </style>
+
+        <div class="card">
+            <h1>Spy Fall</h1>
+
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'page-spyfall',
+            properties: {
+                ws: {
+                    type: Object
+                }
+            },
+            ready: function () {
+                console.log("READY")
+            },
+            detached: function () {
+                console.log("BYE")
+            }
+        });
+    </script>
+</dom-module>

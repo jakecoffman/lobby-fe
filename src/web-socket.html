@@ -5,8 +5,11 @@
     <script>
       Polymer({
         is: "web-socket",
-        ws: null,
         properties: {
+          ws: {
+            type: Object,
+            notify: true
+          },
           protocol: {
             type: String
           },

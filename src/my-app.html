@@ -55,18 +55,18 @@
                 font-weight: bold;
             }
 
-            #lost a{
-              float: right;
-              color: var(--accent-color);
+            #lost a {
+                float: right;
+                color: var(--accent-color);
             }
         </style>
 
         <app-location route="{{route}}"></app-location>
         <app-route
-                route="{{route}}"
-                pattern="/:page"
-                data="{{routeData}}"
-                tail="{{subroute}}"></app-route>
+            route="{{route}}"
+            pattern="/:page"
+            data="{{routeData}}"
+            tail="{{subroute}}"></app-route>
 
         <app-drawer-layout fullbleed>
             <!-- Drawer content -->
@@ -100,11 +100,10 @@
                     </app-toolbar>
                 </app-header>
 
-                <iron-pages
-                        selected="[[page]]"
-                        attr-for-selected="name"
-                        fallback-selection="view404"
-                        role="main">
+                <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
+                    <template is="dom-if" if="[[_eq(page,'spyfall')]]" restamp="true">
+                        <page-spyfall name="spyfall" ws="{{ws}}"></page-spyfall>
+                    </template>
                     <page-index name="index" in-game="{{inGame}}"></page-index>
                     <page-new name="new"></page-new>
                     <page-join name="join"></page-join>
@@ -115,7 +114,7 @@
 
         <change-name id="changename" name="{{player.name}}"></change-name>
 
-        <web-socket id="ws" url="ws://localhost:8444/ws"></web-socket>
+        <web-socket id="ws" url="ws://localhost:8444/ws" ws="{{ws}}"></web-socket>
         <paper-toast id="notifications" text=""></paper-toast>
         <paper-toast id="lost" text="Can't connect to server">
             <a href="" on-tap="connect">Retry</a>
@@ -123,88 +122,92 @@
     </template>
 
     <script>
-      Polymer({
-        is: 'my-app',
-        connected: false,
-        properties: {
-          page: {
-            type: String,
-            reflectToAttribute: true,
-            observer: '_pageChanged'
-          },
-          inGame: {
-            type: Boolean,
-            value: false
-          },
-          player: { // SERVER SIDE
-            type: Object,
-            value: {
-              id: "",
-              name: ""
+        Polymer({
+            is: 'my-app',
+            connected: false,
+            ws: null,
+            properties: {
+                page: {
+                    type: String,
+                    reflectToAttribute: true,
+                    observer: '_pageChanged'
+                },
+                inGame: {
+                    type: Boolean,
+                    value: false
+                },
+                player: { // SERVER SIDE
+                    type: Object,
+                    value: {
+                        id: "",
+                        name: ""
+                    }
+                }
+            },
+
+            observers: [
+                '_routePageChanged(routeData.page)'
+            ],
+
+            listeners: {
+                onopen: 'onOpen',
+                onclose: 'onClose',
+                onmessage: 'onMessage'
+            },
+
+            connect: function () {
+                this.$.lost.text = "Connecting...";
+                this.$.ws.connect();
+            },
+
+            onOpen: function (event) {
+                this.$.lost.close();
+            },
+
+            onMessage: function (e) {
+                var msg = e.detail;
+                switch (msg.type) {
+                    case 'cookie':
+                        document.cookie = msg.cookie;
+                        break;
+                    case 'say':
+
+                        break;
+                    case 'player':
+                        console.log(msg.player);
+                        this.player = msg.player;
+                        break;
+                    default:
+                        console.log("Unknown message", msg);
+                }
+            },
+
+            onClose: function (event) {
+                this.$.lost.text = "Can't connect to server";
+                this.$.lost.duration = 0;
+                this.$.lost.open();
+            },
+
+            _routePageChanged: function (page) {
+                this.page = page || 'index';
+            },
+
+            _pageChanged: function (page) {
+                // Load page import on demand. Show 404 page if fails
+                var resolvedPageUrl = this.resolveUrl('page-' + page + '.html');
+                this.importHref(resolvedPageUrl, null, this._showPage404, true);
+            },
+
+            _showPage404: function () {
+                this.page = 'view404';
+            },
+
+            changeName: function () {
+                this.$.changename.open();
+            },
+            _eq: function(a, b) {
+                return a === b;
             }
-          }
-        },
-
-        observers: [
-          '_routePageChanged(routeData.page)'
-        ],
-
-        listeners: {
-          onopen: 'onOpen',
-          onclose: 'onClose',
-          onmessage: 'onMessage'
-        },
-
-        connect: function() {
-          this.$.lost.text = "Connecting...";
-          this.$.ws.connect();
-        },
-
-        onOpen: function (event) {
-          this.$.lost.close();
-        },
-
-        onMessage: function (e) {
-          var msg = e.detail;
-          switch (msg.type) {
-            case 'cookie':
-              document.cookie = msg.cookie;
-              break;
-            case 'say':
-
-              break;
-            case 'player':
-              console.log(msg.player);
-              this.player = msg.player;
-              break;
-            default:
-              console.log("Unknown message", msg);
-          }
-        },
-
-        onClose: function (event) {
-          this.$.lost.text = "Can't connect to server";
-          this.$.lost.duration = 0;
-          this.$.lost.open();
-        },
-
-        _routePageChanged: function (page) {
-          this.page = page || 'index'; // loads my-index.html by default
-        },
-
-        _pageChanged: function (page) {
-          // Load page import on demand. Show 404 page if fails
-          var resolvedPageUrl = this.resolveUrl('page-' + page + '.html');
-          this.importHref(resolvedPageUrl, null, this._showPage404, true);
-        },
-
-        _showPage404: function () {
-          this.page = 'view404';
-        },
-
-        changeName: function() {
-          this.$.changename.open();
-        }
-      });
+        });
     </script>
 </dom-module>

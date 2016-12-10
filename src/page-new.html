@@ -18,6 +18,15 @@
       paper-card {
         --paper-card-header-text: white;
       }
+
+      a, a:active, a:visited {
+        color: white;
+        text-decoration: none;
+      }
+
+      .players {
+        float: right;
+      }
     </style>
 
     <paper-card heading="Spyfall" image="http://placehold.it/700x150/FFC107/000000">
@@ -25,7 +34,8 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
       </div>
       <div class="card-actions">
-        <paper-button>Play</paper-button>
+        <p class="players">3-12 Players</p>
+        <a href="/spyfall"><paper-button>Play</paper-button></a>
       </div>
     </paper-card>
     <paper-card heading="The Resistance" image="http://placehold.it/700x150/F44336/000000">
@@ -33,7 +43,7 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
       </div>
       <div class="card-actions">
-        <paper-button>Play</paper-button>
+        <paper-button disabled>Play</paper-button>
       </div>
     </paper-card>
     <paper-card heading="Set" image="http://placehold.it/700x150/673AB7/000000">
@@ -41,7 +51,7 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
       </div>
       <div class="card-actions">
-        <paper-button>Play</paper-button>
+        <paper-button disabled>Play</paper-button>
       </div>
     </paper-card>
     <paper-card heading="Tic Tac Toe" image="http://placehold.it/700x150/4CAF50/000000">
@@ -49,7 +59,7 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
       </div>
       <div class="card-actions">
-        <paper-button>Play</paper-button>
+        <paper-button disabled>Play</paper-button>
       </div>
     </paper-card>
   </template>
