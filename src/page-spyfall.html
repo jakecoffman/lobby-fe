@@ -25,11 +25,21 @@
                     type: Object
                 }
             },
+            isPlaying: false,
             ready: function () {
-                console.log("READY")
+                this.fire('ingame', 'spyfall');
+                this.isPlaying = true;
             },
             detached: function () {
-                console.log("BYE")
+
+            },
+            start: function() {
+
+            },
+            handle: function(msg) {
+                switch (msg.type) {
+
+                }
             }
         });
     </script>

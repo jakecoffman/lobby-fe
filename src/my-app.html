@@ -76,17 +76,20 @@
 
                 <iron-selector selected="[[page]]" class="drawer-list" attr-for-selected="name" role="navigation">
                     <a name="index" href="/index">Home</a>
-                    <a name="lobby" href="/lobby">Lobby</a>
                     <template is="dom-if" if="{{!inGame}}">
+                        <a name="lobby" href="/lobby">Lobby</a>
                         <a name="new" href="/new">New game</a>
                         <a name="join" href="/join">Join game</a>
+                    </template>
+                    <template is="dom-if" if="{{_eq(inGame,'spyfall')}}">
+                        <a name="spyfall" href="/spyfall">Spyfall</a>
                     </template>
                 </iron-selector>
 
                 <div class="drawer-list" style="margin: 0;">
                     <span><a href="" on-tap="changeName">Change name</a></span>
                     <template is="dom-if" if="{{inGame}}">
-                        <span><a href="">Leave game</a></span>
+                        <span><a href="" on-tap="leave">Leave game</a></span>
                     </template>
                 </div>
             </app-drawer>
@@ -97,18 +100,17 @@
                 <app-header condenses reveals effects="waterfall">
                     <app-toolbar>
                         <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-                        <!--<div main-title>My App</div>-->
+                        <div main-title>{{inGame}}</div>
                     </app-toolbar>
                 </app-header>
 
                 <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
-                    <template is="dom-if" if="[[_eq(page,'spyfall')]]" restamp="true">
-                        <page-spyfall name="spyfall" ws="{{ws}}"></page-spyfall>
-                    </template>
+                    <page-spyfall id="spyfall" name="spyfall" ws="{{ws}}"></page-spyfall>
+                    <page-lobby id="lobby" name="lobby"></page-lobby>
+
                     <page-index name="index" in-game="{{inGame}}"></page-index>
                     <page-new name="new"></page-new>
                     <page-join name="join"></page-join>
-                    <page-lobby id="lobby" name="lobby"></page-lobby>
                     <page-view404 name="view404"></page-view404>
                 </iron-pages>
             </app-header-layout>
@@ -147,6 +149,8 @@
                 }
             },
 
+            lastPage: '',
+
             observers: [
                 '_routePageChanged(routeData.page)'
             ],
@@ -154,12 +158,27 @@
             listeners: {
                 onopen: 'onOpen',
                 onclose: 'onClose',
-                onmessage: 'onMessage'
+                onmessage: 'onMessage',
+
+                ingame: 'onInGame'
             },
 
             ready: function() {
                 // TODO: run when first page is ready
                 this.async(this.connect.bind(this), 500);
+            },
+
+            onInGame: function(gamePage) {
+                this.inGame = gamePage.detail;
+            },
+
+            leave: function() {
+                this.inGame = '';
+                this.page = 'index';
+            },
+
+            reopen: function() {
+                this.page = this.inGame;
             },
 
             connect: function () {
@@ -184,7 +203,7 @@
                 }
                 var p = this.$[this.page];
                 // !p.handle indicates the page is not ready to handle messages
-                if (p.handle) {
+                if (p && p.handle) {
                     p.handle(msg);
                 }
             },
@@ -200,9 +219,18 @@
             },
 
             _pageChanged: function (page) {
+                var p = this.$[this.lastPage];
+                if (p && p.stop) {
+                    p.stop();
+                }
                 // Load page import on demand. Show 404 page if fails
                 var resolvedPageUrl = this.resolveUrl('page-' + page + '.html');
                 this.importHref(resolvedPageUrl, null, this._showPage404, true);
+                p = this.$[this.page];
+                if (p && p.start) {
+                    p.start();
+                }
+                this.lastPage = page;
             },
 
             _showPage404: function () {
