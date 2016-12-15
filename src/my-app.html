@@ -76,6 +76,7 @@
 
                 <iron-selector selected="[[page]]" class="drawer-list" attr-for-selected="name" role="navigation">
                     <a name="index" href="/index">Home</a>
+                    <a name="lobby" href="/lobby">Lobby</a>
                     <template is="dom-if" if="{{!inGame}}">
                         <a name="new" href="/new">New game</a>
                         <a name="join" href="/join">Join game</a>
@@ -107,6 +108,7 @@
                     <page-index name="index" in-game="{{inGame}}"></page-index>
                     <page-new name="new"></page-new>
                     <page-join name="join"></page-join>
+                    <page-lobby id="lobby" name="lobby"></page-lobby>
                     <page-view404 name="view404"></page-view404>
                 </iron-pages>
             </app-header-layout>
@@ -155,6 +157,11 @@
                 onmessage: 'onMessage'
             },
 
+            ready: function() {
+                // TODO: run when first page is ready
+                this.async(this.connect.bind(this), 500);
+            },
+
             connect: function () {
                 this.$.lost.text = "Connecting...";
                 this.$.ws.connect();
@@ -170,15 +177,15 @@
                     case 'cookie':
                         document.cookie = msg.cookie;
                         break;
-                    case 'say':
-
-                        break;
                     case 'player':
                         console.log(msg.player);
                         this.player = msg.player;
                         break;
-                    default:
-                        console.log("Unknown message", msg);
+                }
+                var p = this.$[this.page];
+                // !p.handle indicates the page is not ready to handle messages
+                if (p.handle) {
+                    p.handle(msg);
                 }
             },
 
