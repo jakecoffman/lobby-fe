@@ -12,8 +12,12 @@
         </style>
 
         <div class="card">
-            <h1>Spy Fall</h1>
-
+            <h2>Players</h2>
+            <ul>
+            <template is="dom-repeat" items="{{state.Players}}">
+                <li>{{item.Name}}</li>
+            </template>
+            </ul>
         </div>
     </template>
 
@@ -22,13 +26,16 @@
             is: 'page-spyfall',
             properties: {
                 ws: {
-                    type: Object
+                    type: Object,
+                    notify: true
                 }
             },
             isPlaying: false,
+            state: {},
             ready: function () {
                 this.fire('ingame', 'spyfall');
                 this.isPlaying = true;
+                this.ws.send(JSON.stringify({Type: 2, Cmd: {Msg: 'spyfall'}}));
             },
             detached: function () {
 
@@ -37,8 +44,12 @@
 
             },
             handle: function(msg) {
-                switch (msg.type) {
-
+                console.log("SPYFALL GOT MSG", msg);
+                switch (msg.Type) {
+                    case 'spyfall':
+                        console.log("GOT STATE", msg.Spyfall);
+                        this.state = msg.Spyfall;
+                        break;
                 }
             }
         });

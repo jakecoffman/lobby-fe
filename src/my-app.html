@@ -203,8 +203,11 @@
                 }
                 var p = this.$[this.page];
                 // !p.handle indicates the page is not ready to handle messages
+                console.log("SENDING MSG TO CHILD", msg);
                 if (p && p.handle) {
                     p.handle(msg);
+                } else {
+                    console.log("OR NOT");
                 }
             },
 

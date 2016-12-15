@@ -41,7 +41,7 @@
             handle: function(msg) {
                 switch (msg.type) {
                     case 'say':
-                        this.push('messages', {m: msg.msg});
+                        this.push('messages', {m: msg.Msg});
                         break;
                 }
                 console.log(this.messages);
