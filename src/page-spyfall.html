@@ -12,10 +12,17 @@
         </style>
 
         <div class="card">
+            Game Join Code: <span>{{state.Code}}</span>
+
             <h2>Players</h2>
             <ul>
             <template is="dom-repeat" items="{{state.Players}}">
-                <li>{{item.Name}}</li>
+                <li>
+                    {{item.Name}}
+                    <template is="dom-if" if="{{!item.Connected}}">
+                        (disconnected)
+                    </template>
+                </li>
             </template>
             </ul>
         </div>
@@ -28,6 +35,10 @@
                 ws: {
                     type: Object,
                     notify: true
+                },
+                route: {
+                    type: Object,
+                    notify: true
                 }
             },
             isPlaying: false,
@@ -35,20 +46,23 @@
             ready: function () {
                 this.fire('ingame', 'spyfall');
                 this.isPlaying = true;
-                this.ws.send(JSON.stringify({Type: 2, Cmd: {Msg: 'spyfall'}}));
+                if (this.route.path === '/spyfall') {
+                    this.ws.send(JSON.stringify({Type: 2, Cmd: {Msg: 'spyfall'}}));
+                } else {
+                    this.ws.send(JSON.stringify({Type: 3, Cmd: {Msg: this.route.path.split('/')[-1]}}))
+                }
             },
             detached: function () {
 
             },
             start: function() {
-
+                this.ready();
             },
             handle: function(msg) {
-                console.log("SPYFALL GOT MSG", msg);
                 switch (msg.Type) {
                     case 'spyfall':
-                        console.log("GOT STATE", msg.Spyfall);
                         this.state = msg.Spyfall;
+                        this.set('route.path', '/spyfall/'+this.state.Id);
                         break;
                 }
             }

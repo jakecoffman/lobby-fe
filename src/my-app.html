@@ -105,7 +105,7 @@
                 </app-header>
 
                 <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
-                    <page-spyfall id="spyfall" name="spyfall" ws="{{ws}}"></page-spyfall>
+                    <page-spyfall id="spyfall" name="spyfall" ws="{{ws}}" route="{{route}}"></page-spyfall>
                     <page-lobby id="lobby" name="lobby"></page-lobby>
 
                     <page-index name="index" in-game="{{inGame}}"></page-index>
@@ -160,12 +160,17 @@
                 onclose: 'onClose',
                 onmessage: 'onMessage',
 
-                ingame: 'onInGame'
+                ingame: 'onInGame',
+                join: 'onJoin'
             },
 
             ready: function() {
                 // TODO: run when first page is ready
                 this.async(this.connect.bind(this), 500);
+            },
+
+            onJoin: function(e) {
+                this.ws.send(JSON.stringify({Type: 3, Cmd: {Msg: e.detail}}));
             },
 
             onInGame: function(gamePage) {
@@ -192,13 +197,15 @@
 
             onMessage: function (e) {
                 var msg = e.detail;
-                switch (msg.type) {
+                switch (msg.Type) {
                     case 'cookie':
-                        document.cookie = msg.cookie;
+                        document.cookie = msg.Cookie;
                         break;
                     case 'player':
-                        console.log(msg.player);
-                        this.player = msg.player;
+                        this.player = msg.Player;
+                        break;
+                    case 'goto':
+                        this.page = msg.Goto;
                         break;
                 }
                 var p = this.$[this.page];

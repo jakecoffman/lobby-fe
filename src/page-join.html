@@ -10,42 +10,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="page-join">
-  <template>
-    <style include="shared-styles">
-      :host {
-        display: block;
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
 
-        padding: 10px;
-      }
-    </style>
+                padding: 10px;
+            }
+        </style>
 
-    <div class="card">
-      <h1>Join Game</h1>
-      <paper-input label="Input label"></paper-input>
-      <paper-button>Join</paper-button>
-    </div>
-  </template>
+        <div class="card">
+            <h1>Join Game</h1>
+            <iron-a11y-keys id="a11y" target="[[target]]" keys="enter"
+                            on-keys-pressed="join"></iron-a11y-keys>
+            <paper-input id="input" name="game" label="game number"></paper-input>
+            <paper-button on-tap="join">Join</paper-button>
+        </div>
+    </template>
 
-  <script>
-    Polymer({
-      is: 'page-join',
-      listeners: {
-        onopen: 'onOpen',
-        onclose: 'onClose',
-        onmessage: 'onMessage'
-      },
-      onOpen: function(e) {
-        console.log("In view2", e);
-      },
-      onClose: function(e) {
-        console.log("In view2", e);
-      },
-      onMessage: function(msg) {
-        console.log("In view2", msg);
-      }
-    });
-  </script>
+    <script>
+        Polymer({
+            is: 'page-join',
+            properties: {
+                ws: Object,
+                target: {
+                    type: Object,
+                    value: function() {
+                        return this.$.input;
+                    }
+                },
+                game: String
+            },
+            join: function() {
+                this.fire('join', this.game);
+            }
+        });
+    </script>
 </dom-module>
