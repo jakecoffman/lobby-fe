@@ -12,46 +12,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!-- shared styles for all views -->
 <dom-module id="shared-styles">
-  <template>
-    <style>
-      .card {
-        margin: 24px;
-        padding: 16px;
+    <template>
+        <style>
+            app-header {
+                color: #fff;
+                background-color: var(--app-primary-color);
+            }
 
-        color: #757575;
-        border-radius: 5px;
-        background-color: #fff;
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-      }
+            app-header paper-icon-button {
+                --paper-icon-button-ink-color: white;
+            }
 
-      .circle {
-        display: inline-block;
+            .card {
+                margin: 24px;
+                padding: 16px;
 
-        width: 64px;
-        height: 64px;
+                color: #757575;
+                border-radius: 5px;
+                background-color: #fff;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+            }
 
-        text-align: center;
+            .circle {
+                display: inline-block;
 
-        color: #555;
-        border-radius: 50%;
-        background: #ddd;
+                width: 64px;
+                height: 64px;
 
-        font-size: 30px;
-        line-height: 64px;
-      }
+                text-align: center;
 
-      h1 {
-        margin: 16px 0;
+                color: #555;
+                border-radius: 50%;
+                background: #ddd;
 
-        color: #212121;
+                font-size: 30px;
+                line-height: 64px;
+            }
 
-        font-size: 22px;
-      }
+            h1 {
+                margin: 16px 0;
 
-      paper-button {
-        background-color: var(--accent-color);
-        color: white;
-      }
-    </style>
-  </template>
+                color: #212121;
+
+                font-size: 22px;
+            }
+
+            paper-button {
+                background-color: var(--accent-color);
+                color: white;
+            }
+
+            paper-toast a {
+                float: right;
+                color: var(--accent-color);
+            }
+        </style>
+    </template>
 </dom-module>

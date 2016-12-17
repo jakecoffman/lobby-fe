@@ -1,5 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
+<link rel="import" href="web-socket.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="page-spyfall">
@@ -7,14 +12,23 @@
         <style include="shared-styles">
             :host {
                 display: block;
-                padding: 10px;
+            }
+            paper-tabs {
+                color: white;
+                background-color: var(--app-primary-color);
             }
         </style>
 
-        <div class="card">
-            Game Join Code: <span>{{state.Code}}</span>
+        <paper-tabs selected="{{tab}}" sticky>
+            <paper-tab>Players</paper-tab>
+            <paper-tab>Locations</paper-tab>
+            <paper-tab>Game</paper-tab>
+        </paper-tabs>
 
-            <h2>Players</h2>
+        <p>{{tab}}</p>
+
+        <div class="card" hidden$="{{_neq(tab, 0)}}">
+            Game Join Code: <span>{{state.Code}}</span>
             <ul>
             <template is="dom-repeat" items="{{state.Players}}">
                 <li>
@@ -26,7 +40,10 @@
             </template>
             </ul>
         </div>
-        <paper-toast id="lost" text="Can't connect to server">
+
+        <web-socket id="ws" url="ws://localhost:8444/spyfall" ws="{{ws}}"></web-socket>
+
+        <paper-toast id="lost" text="Can't connect to server" horizontal-align="right">
             <a href="" on-tap="connect">Retry</a>
         </paper-toast>
     </template>
@@ -35,25 +52,25 @@
         Polymer({
             is: 'page-spyfall',
             properties: {
-                ws: {
-                    type: Object,
-                    notify: true
-                },
                 route: {
                     type: Object,
                     notify: true
+                },
+                tab: {
+                    type: Number,
+                    value: 0
                 }
             },
-            isPlaying: false,
-            state: {},
+            listeners: {
+                onopen: 'onOpen',
+                onclose: 'onClose',
+                onmessage: 'onMessage'
+            },
+            _neq: function (a, b) {
+                return a !== b;
+            },
             ready: function () {
-                this.fire('ingame', 'spyfall');
-                this.isPlaying = true;
-                if (this.route.path === '/spyfall') {
-                    this.ws.send(JSON.stringify({Type: 2, Cmd: {Msg: 'spyfall'}}));
-                } else {
-                    this.ws.send(JSON.stringify({Type: 3, Cmd: {Msg: this.route.path.split('/')[-1]}}))
-                }
+                this.connect();
             },
             detached: function () {
 
@@ -66,6 +83,34 @@
                     case 'spyfall':
                         this.state = msg.Spyfall;
                         this.set('route.path', '/spyfall/'+this.state.Id);
+                        break;
+                }
+            },
+            connect: function () {
+                this.$.lost.text = "Connecting...";
+                this.$.ws.connect();
+            },
+            onOpen: function () {
+                this.$.lost.close();
+                if (this.route.path === '/spyfall') {
+                    this.ws.send(JSON.stringify({Type: 2, Cmd: {Msg: 'spyfall'}}));
+                } else {
+                    this.ws.send(JSON.stringify({Type: 3, Cmd: {Msg: this.route.path.split('/')[-1]}}))
+                }
+            },
+            onClose: function () {
+                this.$.lost.text = "Can't connect to server";
+                this.$.lost.duration = 0;
+                this.$.lost.open();
+            },
+            onMessage: function (e) {
+                var msg = e.detail;
+                switch (msg.Type) {
+                    case 'cookie':
+                        document.cookie = msg.Cookie;
+                        break;
+                    case 'goto':
+                        this.page = msg.Goto;
                         break;
                 }
             }

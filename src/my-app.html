@@ -55,11 +55,6 @@
                 background-color: var(--accent-color);
                 font-weight: bold;
             }
-
-            #lost a {
-                float: right;
-                color: var(--accent-color);
-            }
         </style>
 
         <app-location route="{{route}}"></app-location>
@@ -100,7 +95,8 @@
                 <app-header condenses reveals effects="waterfall">
                     <app-toolbar>
                         <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-                        <div main-title>{{inGame}}</div>
+                        <div main-title></div>
+                        <paper-button>Login</paper-button>
                     </app-toolbar>
                 </app-header>
 
@@ -130,8 +126,6 @@
     <script>
         Polymer({
             is: 'my-app',
-            connected: false,
-            ws: null,
             me: {},
             properties: {
                 page: {
@@ -153,41 +147,6 @@
 
             ready: function() {
 
-            },
-
-            connect: function () {
-                this.$.lost.text = "Connecting...";
-                this.$.ws.connect();
-            },
-
-            onOpen: function (event) {
-                this.$.lost.close();
-            },
-
-            onMessage: function (e) {
-                var msg = e.detail;
-                switch (msg.Type) {
-                    case 'cookie':
-                        document.cookie = msg.Cookie;
-                        break;
-                    case 'goto':
-                        this.page = msg.Goto;
-                        break;
-                }
-                var p = this.$[this.page];
-                // !p.handle indicates the page is not ready to handle messages
-                console.log("SENDING MSG TO CHILD", msg);
-                if (p && p.handle) {
-                    p.handle(msg);
-                } else {
-                    console.log("OR NOT");
-                }
-            },
-
-            onClose: function (event) {
-                this.$.lost.text = "Can't connect to server";
-                this.$.lost.duration = 0;
-                this.$.lost.open();
             },
 
             _routePageChanged: function (page) {
@@ -216,6 +175,7 @@
             changeName: function () {
                 this.$.changename.open();
             },
+
             _eq: function(a, b) {
                 return a === b;
             }

@@ -5,9 +5,16 @@ import (
     "log"
     "net/url"
     "github.com/gin-gonic/gin"
+    "os/exec"
 )
 
 func main() {
+    cmd := exec.Command("polymer", "serve")
+    if err := cmd.Start(); err != nil {
+        log.Fatal(err)
+    }
+    defer cmd.Process.Kill()
+
     fe, _ := url.Parse("http://localhost:8080")
     be, _ := url.Parse("http://localhost:8444")
 
