@@ -1,8 +1,11 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 
 <link rel="import" href="web-socket.html">
 <link rel="import" href="shared-styles.html">
@@ -21,11 +24,8 @@
 
         <paper-tabs selected="{{tab}}" sticky>
             <paper-tab>Players</paper-tab>
-            <paper-tab>Locations</paper-tab>
             <paper-tab>Game</paper-tab>
         </paper-tabs>
-
-        <p>{{tab}}</p>
 
         <div class="card" hidden$="{{_neq(tab, 0)}}">
             Game Join Code: <span>{{state.Code}}</span>
@@ -39,6 +39,12 @@
                 </li>
             </template>
             </ul>
+            <!--<paper-fab icon="add"></paper-fab>-->
+        </div>
+
+        <div class="card" hidden$="{{_neq(tab, 1)}}">
+            Locations
+            <paper-fab icon="av:play-arrow"></paper-fab>
         </div>
 
         <web-socket id="ws" url="ws://localhost:8444/spyfall" ws="{{ws}}"></web-socket>
@@ -66,6 +72,7 @@
                 onclose: 'onClose',
                 onmessage: 'onMessage'
             },
+            inGame: false,
             _neq: function (a, b) {
                 return a !== b;
             },
@@ -92,10 +99,13 @@
             },
             onOpen: function () {
                 this.$.lost.close();
-                if (this.route.path === '/spyfall') {
-                    this.ws.send(JSON.stringify({Type: 2, Cmd: {Msg: 'spyfall'}}));
-                } else {
-                    this.ws.send(JSON.stringify({Type: 3, Cmd: {Msg: this.route.path.split('/')[-1]}}))
+
+                if (!this.inGame) {
+                    if (this.route.path === '/spyfall') {
+                        this.ws.send(JSON.stringify({Type: 2, Cmd: {Msg: 'spyfall'}}));
+                    } else {
+                        this.ws.send(JSON.stringify({Type: 3, Cmd: {Msg: this.route.path.split('/')[-1]}}))
+                    }
                 }
             },
             onClose: function () {
@@ -109,9 +119,8 @@
                     case 'cookie':
                         document.cookie = msg.Cookie;
                         break;
-                    case 'goto':
-                        this.page = msg.Goto;
-                        break;
+                    default:
+                        console.log("GOT MSG:", msg);
                 }
             }
         });
