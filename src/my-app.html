@@ -11,6 +11,7 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="my-icons.html">
 
 <link rel="import" href="change-name.html">
@@ -72,12 +73,11 @@
             <!-- Drawer content -->
             <app-drawer>
                 <!--<app-toolbar>Menu</app-toolbar>-->
-                <user-card user="[[player]]"></user-card>
+                <user-card user="[[me]]"></user-card>
 
                 <iron-selector selected="[[page]]" class="drawer-list" attr-for-selected="name" role="navigation">
                     <a name="index" href="/index">Home</a>
                     <template is="dom-if" if="{{!inGame}}">
-                        <a name="lobby" href="/lobby">Lobby</a>
                         <a name="new" href="/new">New game</a>
                         <a name="join" href="/join">Join game</a>
                     </template>
@@ -118,11 +118,13 @@
 
         <change-name id="changename" name="{{player.name}}"></change-name>
 
-        <web-socket id="ws" url="ws://localhost:8444/ws" ws="{{ws}}"></web-socket>
+        <iron-ajax
+            auto
+            url="/api/me"
+            handle-as="json"
+            last-response="{{me}}"></iron-ajax>
+
         <paper-toast id="notifications" text=""></paper-toast>
-        <paper-toast id="lost" text="Can't connect to server">
-            <a href="" on-tap="connect">Retry</a>
-        </paper-toast>
     </template>
 
     <script>
@@ -130,6 +132,7 @@
             is: 'my-app',
             connected: false,
             ws: null,
+            me: {},
             properties: {
                 page: {
                     type: String,
@@ -139,13 +142,6 @@
                 inGame: {
                     type: Boolean,
                     value: false
-                },
-                player: { // SERVER SIDE
-                    type: Object,
-                    value: {
-                        id: "",
-                        name: ""
-                    }
                 }
             },
 
@@ -155,35 +151,8 @@
                 '_routePageChanged(routeData.page)'
             ],
 
-            listeners: {
-                onopen: 'onOpen',
-                onclose: 'onClose',
-                onmessage: 'onMessage',
-
-                ingame: 'onInGame',
-                join: 'onJoin'
-            },
-
             ready: function() {
-                // TODO: run when first page is ready
-                this.async(this.connect.bind(this), 500);
-            },
 
-            onJoin: function(e) {
-                this.ws.send(JSON.stringify({Type: 3, Cmd: {Msg: e.detail}}));
-            },
-
-            onInGame: function(gamePage) {
-                this.inGame = gamePage.detail;
-            },
-
-            leave: function() {
-                this.inGame = '';
-                this.page = 'index';
-            },
-
-            reopen: function() {
-                this.page = this.inGame;
             },
 
             connect: function () {
@@ -200,9 +169,6 @@
                 switch (msg.Type) {
                     case 'cookie':
                         document.cookie = msg.Cookie;
-                        break;
-                    case 'player':
-                        this.player = msg.Player;
                         break;
                     case 'goto':
                         this.page = msg.Goto;
