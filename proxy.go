@@ -15,12 +15,12 @@ func main() {
     bep := httputil.NewSingleHostReverseProxy(be)
 
     r := gin.Default()
-    r.Any("/", func(ctx *gin.Context) {
-        fep.ServeHTTP(ctx.Writer, ctx.Request)
-    })
     r.Any("/api/*path", func(ctx *gin.Context) {
         ctx.Request.URL.Path = ctx.Param("path")
         bep.ServeHTTP(ctx.Writer, ctx.Request)
+    })
+    r.NoRoute(func(ctx *gin.Context) {
+        fep.ServeHTTP(ctx.Writer, ctx.Request)
     })
     log.Println("FRONTEND:", fe)
     log.Println("BACKEND:", be)
