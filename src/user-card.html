@@ -41,7 +41,7 @@
         },
         _name: function(user) {
           if (user.Name == "") {
-            return "Guest " + user.ID.slice(0, 6);
+            return "Guest " + user.ID.slice(-5);
           }
           return user.name;
         }

@@ -27,18 +27,16 @@
             <paper-tab>Game</paper-tab>
         </paper-tabs>
 
-        <div class="card" hidden$="{{_neq(tab, 0)}}">
+        <div hidden$="{{_neq(tab, 0)}}">
             Game Join Code: <span>{{state.Code}}</span>
-            <ul>
             <template is="dom-repeat" items="{{state.Players}}">
-                <li>
-                    {{item.Name}}
+                <div class="card">
+                    {{name(item)}}
                     <template is="dom-if" if="{{!item.Connected}}">
                         (disconnected)
                     </template>
-                </li>
+                </div>
             </template>
-            </ul>
             <!--<paper-fab icon="add"></paper-fab>-->
         </div>
 
@@ -47,7 +45,7 @@
             <paper-fab icon="av:play-arrow"></paper-fab>
         </div>
 
-        <web-socket id="ws" url="ws://localhost:8444/spyfall" ws="{{ws}}"></web-socket>
+        <web-socket id="ws" url="ws://localhost:2015/api/spyfall" ws="{{ws}}"></web-socket>
 
         <paper-toast id="lost" text="Can't connect to server" horizontal-align="right">
             <a href="" on-tap="connect">Retry</a>
@@ -65,6 +63,18 @@
                 tab: {
                     type: Number,
                     value: 0
+                },
+                player: {
+                    type: Object,
+                    observer: '_playerChanged'
+                },
+                connecting: {
+                    type: Boolean,
+                    value: false
+                },
+                inGame: {
+                    type: Boolean,
+                    value: false
                 }
             },
             listeners: {
@@ -72,18 +82,29 @@
                 onclose: 'onClose',
                 onmessage: 'onMessage'
             },
-            inGame: false,
             _neq: function (a, b) {
                 return a !== b;
             },
             ready: function () {
-                this.connect();
+                if (this.player != null && !this.connecting && this.ws == null) {
+                    this.connect();
+                } else {
+                    console.log("Player isn't fetched yet, waiting to connect");
+                }
             },
             detached: function () {
 
             },
             start: function() {
+                console.log("Start");
                 this.ready();
+            },
+            _playerChanged: function(newPlayer, oldPlayer) {
+                console.log("Player changing to", newPlayer);
+                if (newPlayer != null && !this.inGame && this.ws == null && !this.connecting) {
+                    console.log("Connecting");
+                    this.connect();
+                }
             },
             handle: function(msg) {
                 switch (msg.Type) {
@@ -94,10 +115,12 @@
                 }
             },
             connect: function () {
+                this.connecting = true;
                 this.$.lost.text = "Connecting...";
                 this.$.ws.connect();
             },
             onOpen: function () {
+                this.connecting = false;
                 this.$.lost.close();
 
                 if (!this.inGame) {
@@ -108,20 +131,33 @@
                     }
                 }
             },
-            onClose: function () {
+            onError: function (e) {
+                console.log("ERROR", e.detail);
+            },
+            onClose: function (e) {
+                console.log(e.detail);
+                this.connecting = false;
                 this.$.lost.text = "Can't connect to server";
                 this.$.lost.duration = 0;
                 this.$.lost.open();
             },
             onMessage: function (e) {
+                this.inGame = true;
                 var msg = e.detail;
                 switch (msg.Type) {
                     case 'cookie':
+                        console.log("Setting cookie", msg.Cookie);
                         document.cookie = msg.Cookie;
+                        break;
+                    case 'spyfall':
+                        this.state = msg.Spyfall;
                         break;
                     default:
                         console.log("GOT MSG:", msg);
                 }
+            },
+            name: function (player) {
+                return player.Name ? player.Name : "Guest " + player.ID.slice(-5);
             }
         });
     </script>

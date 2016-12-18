@@ -1,0 +1,15 @@
+localhost {
+    root .
+    log stdout
+
+    proxy / localhost:8080 {
+        transparent
+        websocket
+    }
+
+    proxy /api localhost:8444 {
+        transparent
+        websocket
+        without /api
+    }
+}
