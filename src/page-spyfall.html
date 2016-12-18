@@ -106,14 +106,6 @@
                     this.connect();
                 }
             },
-            handle: function(msg) {
-                switch (msg.Type) {
-                    case 'spyfall':
-                        this.state = msg.Spyfall;
-                        this.set('route.path', '/spyfall/'+this.state.Id);
-                        break;
-                }
-            },
             connect: function () {
                 this.connecting = true;
                 this.$.lost.text = "Connecting...";
@@ -127,7 +119,7 @@
                     if (this.route.path === '/spyfall') {
                         this.ws.send(JSON.stringify({Type: 2, Cmd: {Msg: 'spyfall'}}));
                     } else {
-                        this.ws.send(JSON.stringify({Type: 3, Cmd: {Msg: this.route.path.split('/')[-1]}}))
+                        this.ws.send(JSON.stringify({Type: 4, Cmd: {Msg: this.route.path.split('/').slice(-1)[0]}}))
                     }
                 }
             },
@@ -151,6 +143,7 @@
                         break;
                     case 'spyfall':
                         this.state = msg.Spyfall;
+                        this.set('route.path', '/spyfall/'+this.state.Id);
                         break;
                     default:
                         console.log("GOT MSG:", msg);
