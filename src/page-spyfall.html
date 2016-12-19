@@ -57,13 +57,23 @@
                     <template is="dom-if" if="{{!item.Connected}}">
                         (disconnected)
                     </template>
+                    <template is="dom-if" if="{{item.Ready}}">
+                        READY
+                    </template>
+                    <template is="dom-if" if="{{!item.Ready}}">
+                        NOT READY
+                    </template>
                 </li>
             </template>
             </ul>
         </div>
 
-        <paper-fab icon="av:play-arrow"></paper-fab>
-        <!--<paper-fab icon="av:stop"></paper-fab>-->
+        <template is="dom-if" if="{{!you.Ready}}">
+            <paper-fab icon="av:play-arrow" on-tap="readyup"></paper-fab>
+        </template>
+        <template is="dom-if" if="{{you.Ready}}">
+            <paper-fab icon="av:stop"></paper-fab>
+        </template>
 
         <div class="card">
             <h2>Locations</h2>
@@ -169,6 +179,7 @@
                         break;
                     case 'spyfall':
                         this.state = msg.Spyfall;
+                        this.you = msg.You;
                         this.set('route.path', '/spyfall/'+this.state.Id);
                         break;
                     case 'error':
@@ -182,6 +193,9 @@
             },
             name: function (player) {
                 return player.Name ? player.Name : "Guest " + player.ID.slice(-5);
+            },
+            readyup: function() {
+                this.ws.send(JSON.stringify({Type: "READY"}))
             }
         });
     </script>
