@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 
 <link rel="import" href="web-socket.html">
 <link rel="import" href="shared-styles.html">
@@ -22,21 +23,15 @@
             }
         </style>
 
-        <!--<paper-tabs selected="{{tab}}" sticky>-->
-            <!--<paper-tab>Players</paper-tab>-->
-            <!--<paper-tab>Game</paper-tab>-->
-        <!--</paper-tabs>-->
-
-        <!--<div hidden$="{{_neq(tab, 0)}}">-->
         <div class="card">
-            <h2>Game</h2>
+            <h2>Spyfall</h2>
             <p>
                 Join Code: <span>{{state.Code}}</span>
             </p>
             <template is="dom-if" if="{{!state.Started}}">
                 <p>
                     Waiting for all players to be ready. Press
-                    <iron-icon icon="av:play-arrow"></iron-icon>
+                    <iron-icon icon="thumb-up"></iron-icon>
                     to ready up.
                 </p>
                 <p>
@@ -48,17 +43,17 @@
                     goes first.
                 </p>
             </template>
-            <template is="dom-if" if="{{state.Started}}">
+            <div hidden$="{{!state.Started}}">
                 <p>{{time}}</p>
-                <template is="dom-if" if="{{you.spy}}">
+                <div hidden$="{{!you.Spy}}">
                     <p>
                         You are the Spy! Try to figure out what everyone else's
                         location is. Once you know it, shout it out before the timer
                         runs out, and you win. If the timer runs out and everyone
                         else doesn't guess you are the Spy, then you win.
                     </p>
-                </template>
-                <template is="dom-if" if="{{!you.spy}}">
+                </div>
+                <div hidden$="{{you.Spy}}">
                     <p>
                         You are <b>not</b> the Spy! To find the Spy, the player
                         with the <iron-icon icon="star"></iron-icon> next to their name
@@ -71,8 +66,10 @@
                         then the Spy loses. If the Spy reveals themselves and correctly
                         guesses the location, then the Spy wins.
                     </p>
-                </template>
-            </template>
+                    <p>Location: {{you.location}}</p>
+                    <p>Role: {{you.role}}</p>
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -80,33 +77,56 @@
             <ul>
             <template is="dom-repeat" items="{{state.Players}}">
                 <li>
+                    <span hidden$="{{!item.First}}">
+                        <iron-icon icon="star"></iron-icon>
+                    </span>
                     {{name(item)}}
-                    <template is="dom-if" if="{{!item.Connected}}">
-                        (disconnected)
-                    </template>
-                    <template is="dom-if" if="{{item.Ready}}">
-                        READY
-                    </template>
-                    <template is="dom-if" if="{{!item.Ready}}">
-                        NOT READY
-                    </template>
+                    <span hidden$="{{item.Connected}}">
+                        <iron-icon icon="warning"></iron-icon>
+                    </span>
+                    <span hidden$="{{state.Started}}">
+                        <span hidden$="{{!item.Ready}}">
+                            <iron-icon icon="thumb-up"></iron-icon>
+                        </span>
+                        <span hidden$="{{item.Ready}}">
+                            <iron-icon icon="thumb-down"></iron-icon>
+                        </span>
+                    </span>
                 </li>
             </template>
             </ul>
         </div>
 
-        <template is="dom-if" if="{{!you.Ready}}">
-            <paper-fab icon="av:play-arrow" on-tap="readyup"></paper-fab>
-        </template>
-        <template is="dom-if" if="{{you.Ready}}">
-            <paper-fab icon="av:stop" on-tap="readyup"></paper-fab>
-        </template>
+        <div hidden$="{{state.Started}}">
+            <div hidden$="{{you.Ready}}">
+                <paper-fab icon="thumb-up" on-tap="readyup"></paper-fab>
+            </div>
+            <div hidden$="{{!you.Ready}}">
+                <paper-fab icon="thumb-down" on-tap="readyup"></paper-fab>
+            </div>
+        </div>
+        <div hidden$="{{!state.Started}}">
+            <paper-fab icon="av:stop" on-tap="stop"></paper-fab>
+        </div>
 
         <div class="card">
             <h2>Locations</h2>
+            <ul>
+                <template is="dom-repeat" items="{{_keys(locations)}}">
+                    <li>
+                        {{item}}
+                    </li>
+                </template>
+            </ul>
         </div>
 
         <web-socket id="ws" url="ws://localhost:2015/api/spyfall" ws="{{ws}}"></web-socket>
+
+        <iron-ajax
+            auto
+            url="/api/spyfall/locations"
+            handle-as="json"
+            last-response="{{locations}}"></iron-ajax>
 
         <paper-toast id="lost" text="Can't connect to server" horizontal-align="right">
             <a href="" on-tap="connect">Retry</a>
@@ -230,8 +250,14 @@
             name: function (player) {
                 return player.Name ? player.Name : "Guest " + player.ID.slice(-5);
             },
+            _keys: function(obj) {
+                return Object.keys(obj);
+            },
             readyup: function() {
                 this.ws.send(JSON.stringify({Type: "READY"}))
+            },
+            stop: function() {
+                this.ws.send(JSON.stringify({Type: "STOP"}))
             }
         });
     </script>
