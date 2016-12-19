@@ -33,19 +33,46 @@
             <p>
                 Join Code: <span>{{state.Code}}</span>
             </p>
-            <p>
-                Waiting for all players to be ready. Press
-                <iron-icon icon="av:play-arrow"></iron-icon>
-                to ready up.
-            </p>
-            <p>
-                When the game starts, one player will randomly
-                be chosen as the Spy. All players will see a location
-                except for the Spy. To find the Spy, players take turns
-                asking one question to another player until time runs out.
-                The player with the <iron-icon icon="star"></iron-icon>
-                goes first.
-            </p>
+            <template is="dom-if" if="{{!state.Started}}">
+                <p>
+                    Waiting for all players to be ready. Press
+                    <iron-icon icon="av:play-arrow"></iron-icon>
+                    to ready up.
+                </p>
+                <p>
+                    When the game starts, one player will randomly
+                    be chosen as the Spy. All players will see a location
+                    except for the Spy. To find the Spy, players take turns
+                    asking one question to another player until time runs out.
+                    The player with the <iron-icon icon="star"></iron-icon>
+                    goes first.
+                </p>
+            </template>
+            <template is="dom-if" if="{{state.Started}}">
+                <p>{{time}}</p>
+                <template is="dom-if" if="{{you.spy}}">
+                    <p>
+                        You are the Spy! Try to figure out what everyone else's
+                        location is. Once you know it, shout it out before the timer
+                        runs out, and you win. If the timer runs out and everyone
+                        else doesn't guess you are the Spy, then you win.
+                    </p>
+                </template>
+                <template is="dom-if" if="{{!you.spy}}">
+                    <p>
+                        You are <b>not</b> the Spy! To find the Spy, the player
+                        with the <iron-icon icon="star"></iron-icon> next to their name
+                        asks one person a question relating to your shared location.
+                        The person must answer, trying not to give away the location
+                        to the Spy, and then proceeds to ask another person a question.
+                    </p>
+                    <p>
+                        If everyone agrees on who the spy is before the time runs out,
+                        then the Spy loses. If the Spy reveals themselves and correctly
+                        guesses the location, then the Spy wins.
+                    </p>
+                </template>
+            </template>
         </div>
 
         <div class="card">
@@ -72,7 +99,7 @@
             <paper-fab icon="av:play-arrow" on-tap="readyup"></paper-fab>
         </template>
         <template is="dom-if" if="{{you.Ready}}">
-            <paper-fab icon="av:stop"></paper-fab>
+            <paper-fab icon="av:stop" on-tap="readyup"></paper-fab>
         </template>
 
         <div class="card">
@@ -85,6 +112,8 @@
             <a href="" on-tap="connect">Retry</a>
         </paper-toast>
         <paper-toast id="errors" text="" horizontal-align="right">
+        </paper-toast>
+        <paper-toast id="messages" text="" duration="3000" horizontal-align="right">
         </paper-toast>
     </template>
 
@@ -186,6 +215,13 @@
                         console.log(msg.Msg);
                         this.$.errors.text = msg.Msg;
                         this.$.errors.open();
+                        break;
+                    case 'starting':
+                        this.$.messages.text = msg.Msg;
+                        this.$.messages.open();
+                        break;
+                    case 'tick':
+                        this.time = msg.Msg;
                         break;
                     default:
                         console.log("GOT MSG:", msg);
