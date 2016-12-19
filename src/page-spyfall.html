@@ -22,28 +22,49 @@
             }
         </style>
 
-        <paper-tabs selected="{{tab}}" sticky>
-            <paper-tab>Players</paper-tab>
-            <paper-tab>Game</paper-tab>
-        </paper-tabs>
+        <!--<paper-tabs selected="{{tab}}" sticky>-->
+            <!--<paper-tab>Players</paper-tab>-->
+            <!--<paper-tab>Game</paper-tab>-->
+        <!--</paper-tabs>-->
 
-        <div hidden$="{{_neq(tab, 0)}}">
-            Game Join Code: <span>{{state.Code}}</span>
+        <!--<div hidden$="{{_neq(tab, 0)}}">-->
+        <div class="card">
+            <h2>Game</h2>
+            <p>
+                Join Code: <span>{{state.Code}}</span>
+            </p>
+            <p>
+                Waiting for all players to be ready. Press
+                <iron-icon icon="av:play-arrow"></iron-icon>
+                to ready up.
+            </p>
+            <p>
+                When the game starts, one player will randomly
+                be chosen as the Spy. All players will see a location
+                except for the Spy. To find the Spy, players take turns
+                asking one question to another player until time runs out.
+                The player with the <iron-icon icon="star"></iron-icon>
+                goes first.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Players</h2>
             <template is="dom-repeat" items="{{state.Players}}">
-                <div class="card">
-                    {{name(item)}}
-                    <template is="dom-if" if="{{!item.Connected}}">
-                        (disconnected)
-                    </template>
-                </div>
+                {{name(item)}}
+                <template is="dom-if" if="{{!item.Connected}}">
+                    (disconnected)
+                </template>
             </template>
-            <!--<paper-fab icon="add"></paper-fab>-->
         </div>
 
-        <div class="card" hidden$="{{_neq(tab, 1)}}">
-            Locations
-            <paper-fab icon="av:play-arrow"></paper-fab>
-        </div>
+        <paper-fab icon="av:play-arrow"></paper-fab>
+        <!--<paper-fab icon="av:stop"></paper-fab>-->
+
+        <!--<div class="card" hidden$="{{_neq(tab, 1)}}">-->
+            <!--Locations-->
+            <!--<paper-fab icon="av:play-arrow"></paper-fab>-->
+        <!--</div>-->
 
         <web-socket id="ws" url="ws://localhost:2015/api/spyfall" ws="{{ws}}"></web-socket>
 
