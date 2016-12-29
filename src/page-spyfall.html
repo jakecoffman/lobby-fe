@@ -17,6 +17,7 @@
             :host {
                 display: block;
             }
+
             paper-tabs {
                 color: white;
                 background-color: var(--app-primary-color);
@@ -39,12 +40,13 @@
                     be chosen as the Spy. All players will see a location
                     except for the Spy. To find the Spy, players take turns
                     asking one question to another player until time runs out.
-                    The player with the <iron-icon icon="star"></iron-icon>
+                    The player with the
+                    <iron-icon icon="star"></iron-icon>
                     goes first.
                 </p>
             </template>
             <div hidden$="{{!state.Started}}">
-                <p>{{time}}</p>
+                <p>{{left}}</p>
                 <div hidden$="{{!you.Spy}}">
                     <p>
                         You are the Spy! Try to figure out what everyone else's
@@ -56,7 +58,9 @@
                 <div hidden$="{{you.Spy}}">
                     <p>
                         You are <b>not</b> the Spy! To find the Spy, the player
-                        with the <iron-icon icon="star"></iron-icon> next to their name
+                        with the
+                        <iron-icon icon="star"></iron-icon>
+                        next to their name
                         asks one person a question relating to your shared location.
                         The person must answer, trying not to give away the location
                         to the Spy, and then proceeds to ask another person a question.
@@ -75,16 +79,16 @@
         <div class="card">
             <h2>Players</h2>
             <ul>
-            <template is="dom-repeat" items="{{state.Players}}">
-                <li>
+                <template is="dom-repeat" items="{{state.Players}}">
+                    <li>
                     <span hidden$="{{!item.First}}">
                         <iron-icon icon="star"></iron-icon>
                     </span>
-                    {{name(item)}}
-                    <span hidden$="{{item.Connected}}">
+                        {{name(item)}}
+                        <span hidden$="{{item.Connected}}">
                         <iron-icon icon="warning"></iron-icon>
                     </span>
-                    <span hidden$="{{state.Started}}">
+                        <span hidden$="{{state.Started}}">
                         <span hidden$="{{!item.Ready}}">
                             <iron-icon icon="thumb-up"></iron-icon>
                         </span>
@@ -92,8 +96,13 @@
                             <iron-icon icon="thumb-down"></iron-icon>
                         </span>
                     </span>
-                </li>
-            </template>
+                        <span hidden$="{{!state.Started}}">
+                        <span hidden="{{!item.Stop}}">
+                            <iron-icon icon="av:stop"></iron-icon>
+                        </span>
+                    </span>
+                    </li>
+                </template>
             </ul>
         </div>
 
@@ -106,7 +115,12 @@
             </div>
         </div>
         <div hidden$="{{!state.Started}}">
-            <paper-fab icon="av:stop" on-tap="stop"></paper-fab>
+            <div hidden$="{{you.Stop}}">
+                <paper-fab icon="av:stop" on-tap="stop"></paper-fab>
+            </div>
+            <div hidden$="{{!you.Stop}}">
+                <paper-fab icon="av:play-arrow" on-tap="stop"></paper-fab>
+            </div>
         </div>
 
         <div class="card">
@@ -160,6 +174,10 @@
                 inGame: {
                     type: Boolean,
                     value: false
+                },
+                left: {
+                    type: Number,
+                    value: 0.0
                 }
             },
             listeners: {
@@ -167,6 +185,7 @@
                 onclose: 'onClose',
                 onmessage: 'onMessage'
             },
+            countdownHandle: null,
             _neq: function (a, b) {
                 return a !== b;
             },
@@ -180,11 +199,11 @@
             detached: function () {
 
             },
-            start: function() {
+            start: function () {
                 console.log("Start");
                 this.ready();
             },
-            _playerChanged: function(newPlayer, oldPlayer) {
+            _playerChanged: function (newPlayer, oldPlayer) {
                 console.log("Player changing to", newPlayer);
                 if (newPlayer != null && !this.inGame && this.ws == null && !this.connecting) {
                     console.log("Connecting");
@@ -204,7 +223,10 @@
                     if (this.route.path === '/spyfall') {
                         this.ws.send(JSON.stringify({Type: "NEW", Cmd: {Msg: 'spyfall'}}));
                     } else {
-                        this.ws.send(JSON.stringify({Type: "JOIN", Cmd: {Msg: this.route.path.split('/').slice(-1)[0]}}))
+                        this.ws.send(JSON.stringify({
+                            Type: "JOIN",
+                            Cmd: {Msg: this.route.path.split('/').slice(-1)[0]}
+                        }))
                     }
                 }
             },
@@ -229,7 +251,14 @@
                     case 'spyfall':
                         this.state = msg.Spyfall;
                         this.you = msg.You;
-                        this.set('route.path', '/spyfall/'+this.state.Id);
+                        if (this.state.Started) {
+                            this.left = new Date(msg.Spyfall.EndsAt).getTime() - new Date().getTime();
+                            if (this.countdownHandle) {
+                                this.cancelAsync(this.countdownHandle);
+                            }
+                            this.countdownHandle = this.async(this.nextCount, this.left % 1000);
+                        }
+                        this.set('route.path', '/spyfall/' + this.state.Id);
                         break;
                     case 'error':
                         console.log(msg.Msg);
@@ -240,9 +269,6 @@
                         this.$.messages.text = msg.Msg;
                         this.$.messages.open();
                         break;
-                    case 'tick':
-                        this.time = msg.Msg;
-                        break;
                     default:
                         console.log("GOT MSG:", msg);
                 }
@@ -250,14 +276,24 @@
             name: function (player) {
                 return player.Name ? player.Name : "Guest " + player.ID.slice(-5);
             },
-            _keys: function(obj) {
+            _keys: function (obj) {
                 return Object.keys(obj);
             },
-            readyup: function() {
+            readyup: function () {
                 this.ws.send(JSON.stringify({Type: "READY"}))
             },
-            stop: function() {
+            stop: function () {
                 this.ws.send(JSON.stringify({Type: "STOP"}))
+            },
+            nextCount: function(){
+                console.log("NEXT COUNT");
+                this.left = new Date(this.state.EndsAt).getTime() - new Date().getTime();
+
+                if(this.state.Started && this.left > 1000) {
+                    this.countdownHandle = this.async(this.nextCount, this.left % 1000);
+                } else {
+                    this.countdownHandle = null;
+                }
             }
         });
     </script>
