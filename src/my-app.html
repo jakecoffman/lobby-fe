@@ -57,7 +57,7 @@
             }
         </style>
 
-        <app-location route="{{route}}"></app-location>
+        <app-location route="{{route}}" use-hash-as-path></app-location>
         <app-route
             route="{{route}}"
             pattern="/:page"
@@ -71,13 +71,10 @@
                 <user-card user="[[me]]"></user-card>
 
                 <iron-selector selected="[[page]]" class="drawer-list" attr-for-selected="name" role="navigation">
-                    <a name="index" href="/index">Home</a>
+                    <a name="index" href="/#/index">Home</a>
                     <template is="dom-if" if="{{!inGame}}">
-                        <a name="new" href="/new">New game</a>
-                        <a name="join" href="/join">Join game</a>
-                    </template>
-                    <template is="dom-if" if="{{_eq(inGame,'spyfall')}}">
-                        <a name="spyfall" href="/spyfall">Spyfall</a>
+                        <a name="new" href="/#/new">New game</a>
+                        <a name="join" href="/#/join">Join game</a>
                     </template>
                 </iron-selector>
 
@@ -95,8 +92,7 @@
                 <app-header condenses reveals effects="waterfall">
                     <app-toolbar>
                         <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-                        <div main-title></div>
-                        <paper-button>Login</paper-button>
+                        <div main-title>Room and Board</div>
                     </app-toolbar>
                 </app-header>
 
@@ -150,7 +146,10 @@
             },
 
             _routePageChanged: function (page) {
-                this.page = page || 'index';
+              if (page === "spyfall") {
+                location.pathname = "spyfall";
+              }
+              this.page = page || 'index';
             },
 
             _pageChanged: function (page) {

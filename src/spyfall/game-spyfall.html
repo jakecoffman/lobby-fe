@@ -1,17 +1,17 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../bower_components/iron-icons/av-icons.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
-<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
-<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
-<link rel="import" href="web-socket.html">
-<link rel="import" href="shared-styles.html">
+<link rel="import" href="../web-socket.html">
+<link rel="import" href="../shared-styles.html">
 
-<dom-module id="page-spyfall">
+<dom-module id="game-spyfall">
     <template>
         <style include="shared-styles">
             :host {
@@ -153,19 +153,11 @@
 
     <script>
         Polymer({
-            is: 'page-spyfall',
+            is: 'game-spyfall',
             properties: {
-                route: {
-                    type: Object,
-                    notify: true
-                },
                 tab: {
                     type: Number,
                     value: 0
-                },
-                player: {
-                    type: Object,
-                    observer: '_playerChanged'
                 },
                 connecting: {
                     type: Boolean,
@@ -190,25 +182,7 @@
                 return a !== b;
             },
             ready: function () {
-                if (this.player != null && !this.connecting && this.ws == null) {
-                    this.connect();
-                } else {
-                    console.log("Player isn't fetched yet, waiting to connect");
-                }
-            },
-            detached: function () {
-
-            },
-            start: function () {
-                console.log("Start");
-                this.ready();
-            },
-            _playerChanged: function (newPlayer, oldPlayer) {
-                console.log("Player changing to", newPlayer);
-                if (newPlayer != null && !this.inGame && this.ws == null && !this.connecting) {
-                    console.log("Connecting");
-                    this.connect();
-                }
+                this.connect();
             },
             connect: function () {
                 this.connecting = true;
@@ -220,14 +194,14 @@
                 this.$.lost.close();
 
                 if (!this.inGame) {
-                    if (this.route.path === '/spyfall') {
+//                    if (this.route.path === '/spyfall') {
                         this.ws.send(JSON.stringify({Type: "NEW", Cmd: {Msg: 'spyfall'}}));
-                    } else {
-                        this.ws.send(JSON.stringify({
-                            Type: "JOIN",
-                            Cmd: {Msg: this.route.path.split('/').slice(-1)[0]}
-                        }))
-                    }
+//                    } else {
+//                        this.ws.send(JSON.stringify({
+//                            Type: "JOIN",
+//                            Cmd: {Msg: this.route.path.split('/').slice(-1)[0]}
+//                        }))
+//                    }
                 }
             },
             onError: function (e) {
@@ -286,7 +260,6 @@
                 this.ws.send(JSON.stringify({Type: "STOP"}))
             },
             nextCount: function(){
-                console.log("NEXT COUNT");
                 this.left = new Date(this.state.EndsAt).getTime() - new Date().getTime();
 
                 if(this.state.Started && this.left > 1000) {

@@ -35,7 +35,7 @@
       </div>
       <div class="card-actions">
         <p class="players">3-12 Players</p>
-        <a name="spyfall" href="/spyfall"><paper-button>Play</paper-button></a>
+        <a name="spyfall" href="/spyfall" target="_blank"><paper-button>New game</paper-button></a>
       </div>
     </paper-card>
     <paper-card heading="The Resistance" image="http://placehold.it/700x150/F44336/000000">
@@ -43,7 +43,7 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
       </div>
       <div class="card-actions">
-        <paper-button disabled>Play</paper-button>
+        <paper-button disabled>New game</paper-button>
       </div>
     </paper-card>
     <paper-card heading="Set" image="http://placehold.it/700x150/673AB7/000000">
@@ -51,7 +51,7 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
       </div>
       <div class="card-actions">
-        <paper-button disabled>Play</paper-button>
+        <paper-button disabled>New game</paper-button>
       </div>
     </paper-card>
     <paper-card heading="Tic Tac Toe" image="http://placehold.it/700x150/4CAF50/000000">
@@ -59,31 +59,14 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet lorem vel sem convallis ullamcorper ac quis neque.
       </div>
       <div class="card-actions">
-        <paper-button disabled>Play</paper-button>
+        <paper-button disabled>New game</paper-button>
       </div>
     </paper-card>
   </template>
 
   <script>
     Polymer({
-      is: 'page-new',
-      properties: {
-        name: String
-      },
-      listeners: {
-        onopen: 'onOpen',
-        onclose: 'onClose',
-        onmessage: 'onMessage'
-      },
-      onOpen: function(e) {
-        console.log("In view1", e);
-      },
-      onClose: function(e) {
-        console.log("In view1", e);
-      },
-      onMessage: function(msg) {
-        console.log("In view1", msg);
-      }
+      is: 'page-new'
     });
   </script>
 </dom-module>

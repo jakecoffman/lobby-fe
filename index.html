@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>Lobby</title>
+    <title>{{.title}}</title>
     <meta name="description" content="A game server">
 
     <link rel="icon" href="/images/favicon.ico">
@@ -82,7 +82,7 @@
       }
     </script>
 
-    <link rel="import" href="/src/my-app.html">
+    <link rel="import" href="/src/{{.src}}.html">
 
     <style>
       body {
@@ -95,7 +95,7 @@
     </style>
   </head>
   <body>
-    <my-app></my-app>
+    {{.tag}}
     <!-- Built with love using Polymer Starter Kit -->
   </body>
 </html>

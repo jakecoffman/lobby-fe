@@ -2,7 +2,7 @@ localhost {
     root .
     log stdout
 
-    proxy / localhost:8080 {
+    proxy / localhost:8888 {
         transparent
         websocket
     }
