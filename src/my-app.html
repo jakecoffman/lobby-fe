@@ -17,43 +17,17 @@
 <link rel="import" href="change-name.html">
 <link rel="import" href="user-card.html">
 <link rel="import" href="web-socket.html">
+<link rel="import" href="shared-styles.html">
 
 <dom-module id="my-app">
     <template>
-        <style>
+        <style include="shared-styles">
             :host {
                 --app-primary-color: #1e3e6e;
                 --app-secondary-color: black;
                 --accent-color: #ff7c35;
 
                 display: block;
-            }
-
-            app-header {
-                color: #fff;
-                background-color: var(--app-primary-color);
-            }
-
-            app-header paper-icon-button {
-                --paper-icon-button-ink-color: white;
-            }
-
-            .drawer-list {
-                margin: 0 20px;
-            }
-
-            .drawer-list a {
-                display: block;
-                padding: 0 16px;
-                text-decoration: none;
-                color: var(--app-secondary-color);
-                line-height: 40px;
-            }
-
-            .drawer-list a.iron-selected {
-                color: white;
-                background-color: var(--accent-color);
-                font-weight: bold;
             }
         </style>
 
@@ -72,17 +46,12 @@
 
                 <iron-selector selected="[[page]]" class="drawer-list" attr-for-selected="name" role="navigation">
                     <a name="index" href="/#/index">Home</a>
-                    <template is="dom-if" if="{{!inGame}}">
-                        <a name="new" href="/#/new">New game</a>
-                        <a name="join" href="/#/join">Join game</a>
-                    </template>
+                    <a name="new" href="/#/new">New game</a>
+                    <a name="join" href="/#/join">Join game</a>
                 </iron-selector>
 
                 <div class="drawer-list" style="margin: 0;">
                     <span><a href="" on-tap="changeName">Change name</a></span>
-                    <template is="dom-if" if="{{inGame}}">
-                        <span><a href="" on-tap="leave">Leave game</a></span>
-                    </template>
                 </div>
             </app-drawer>
 
@@ -92,15 +61,13 @@
                 <app-header condenses reveals effects="waterfall">
                     <app-toolbar>
                         <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-                        <div main-title>Room and Board</div>
+                        <div main-title>Boardless</div>
+                        <span>{{me.Name}}</span>
                     </app-toolbar>
                 </app-header>
 
                 <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
-                    <page-spyfall id="spyfall" name="spyfall" ws="{{ws}}" route="{{route}}" player="{{me}}"></page-spyfall>
-                    <page-lobby id="lobby" name="lobby"></page-lobby>
-
-                    <page-index name="index" in-game="{{inGame}}"></page-index>
+                    <page-index name="index"></page-index>
                     <page-new name="new"></page-new>
                     <page-join name="join"></page-join>
                     <page-view404 name="view404"></page-view404>
@@ -135,8 +102,6 @@
                 }
             },
 
-            lastPage: '',
-
             observers: [
                 '_routePageChanged(routeData.page)'
             ],
@@ -146,25 +111,13 @@
             },
 
             _routePageChanged: function (page) {
-              if (page === "spyfall") {
-                location.pathname = "spyfall";
-              }
               this.page = page || 'index';
             },
 
             _pageChanged: function (page) {
-                var p = this.$[this.lastPage];
-                if (p && p.stop) {
-                    p.stop();
-                }
                 // Load page import on demand. Show 404 page if fails
                 var resolvedPageUrl = this.resolveUrl('page-' + page + '.html');
                 this.importHref(resolvedPageUrl, null, this._showPage404, true);
-                p = this.$[this.page];
-                if (p && p.start) {
-                    p.start();
-                }
-                this.lastPage = page;
             },
 
             _showPage404: function () {
@@ -173,10 +126,6 @@
 
             changeName: function () {
                 this.$.changename.open();
-            },
-
-            _eq: function(a, b) {
-                return a === b;
             }
         });
     </script>

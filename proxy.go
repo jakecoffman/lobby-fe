@@ -45,7 +45,7 @@ func main() {
         // otherwise serve main application (which will 404 if the route doesn't exist)
         tmpl := template.Must(template.ParseFiles("./index.html"))
         tmpl.Execute(ctx.Writer,  map[string]interface{}{
-            "title": "Room and Board",
+            "title": "Boardless",
             "src": "my-app",
             "tag": template.HTML("<my-app></my-app>"),
         })

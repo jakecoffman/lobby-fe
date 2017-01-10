@@ -1,13 +1,23 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
-<link rel="import" href="../../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
+<link rel="import" href="../user-card.html">
 <link rel="import" href="../web-socket.html">
 <link rel="import" href="../shared-styles.html">
 
@@ -15,80 +25,108 @@
     <template>
         <style include="shared-styles">
             :host {
+                --app-primary-color: #000000;
+                --app-secondary-color: #4a4a4a;
+                --accent-color: #9f1e14;
+
                 display: block;
             }
-
-            paper-tabs {
-                color: white;
-                background-color: var(--app-primary-color);
-            }
         </style>
+        <app-location route="{{route}}" use-hash-as-path></app-location>
+        <app-route
+            route="{{route}}"
+            pattern="/:page"
+            data="{{routeData}}"
+            tail="{{subroute}}"></app-route>
 
-        <div class="card">
-            <h2>Spyfall</h2>
-            <p>
-                Join Code: <span>{{state.Code}}</span>
-            </p>
-            <template is="dom-if" if="{{!state.Started}}">
-                <p>
-                    Waiting for all players to be ready. Press
-                    <iron-icon icon="thumb-up"></iron-icon>
-                    to ready up.
-                </p>
-                <p>
-                    When the game starts, one player will randomly
-                    be chosen as the Spy. All players will see a location
-                    except for the Spy. To find the Spy, players take turns
-                    asking one question to another player until time runs out.
-                    The player with the
-                    <iron-icon icon="star"></iron-icon>
-                    goes first.
-                </p>
-            </template>
-            <div hidden$="{{!state.Started}}">
-                <p>{{left}}</p>
-                <div hidden$="{{!you.Spy}}">
-                    <p>
-                        You are the Spy! Try to figure out what everyone else's
-                        location is. Once you know it, shout it out before the timer
-                        runs out, and you win. If the timer runs out and everyone
-                        else doesn't guess you are the Spy, then you win.
-                    </p>
-                </div>
-                <div hidden$="{{you.Spy}}">
-                    <p>
-                        You are <b>not</b> the Spy! To find the Spy, the player
-                        with the
-                        <iron-icon icon="star"></iron-icon>
-                        next to their name
-                        asks one person a question relating to your shared location.
-                        The person must answer, trying not to give away the location
-                        to the Spy, and then proceeds to ask another person a question.
-                    </p>
-                    <p>
-                        If everyone agrees on who the spy is before the time runs out,
-                        then the Spy loses. If the Spy reveals themselves and correctly
-                        guesses the location, then the Spy wins.
-                    </p>
-                    <p>Location: {{you.Location}}</p>
-                    <p>Role: {{you.Role}}</p>
-                </div>
-            </div>
-        </div>
+        <app-drawer-layout fullbleed>
+            <!-- Drawer content -->
+            <app-drawer>
+                <user-card user="[[me]]"></user-card>
 
-        <div class="card">
-            <h2>Players</h2>
-            <ul>
-                <template is="dom-repeat" items="{{state.Players}}">
-                    <li>
+                <div class="drawer-list" style="margin: 0;">
+                    <template is="dom-if" if="{{inGame}}">
+                        <span><a href="" on-tap="leave">Leave game</a></span>
+                    </template>
+                </div>
+            </app-drawer>
+
+            <!-- Main content -->
+            <app-header-layout has-scrolling-region>
+
+                <app-header condenses reveals effects="waterfall">
+                    <app-toolbar>
+                        <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+                        <div main-title>Spyfall</div>
+                        <span>{{me.Name}}</span>
+                    </app-toolbar>
+                </app-header>
+
+                <div class="card">
+                    <h2>Info</h2>
+                    <p>
+                        Join Code: <b>{{state.Code}}</b>
+                    </p>
+                    <template is="dom-if" if="{{!state.Started}}">
+                        <p>
+                            Waiting for all players to be ready. Press
+                            <iron-icon icon="thumb-up"></iron-icon>
+                            to ready up.
+                        </p>
+                        <p>
+                            When the game starts, one player will randomly
+                            be chosen as the Spy. All players will see a location
+                            except for the Spy. To find the Spy, players take turns
+                            asking one question to another player until time runs out.
+                            The player with the
+                            <iron-icon icon="star"></iron-icon>
+                            goes first.
+                        </p>
+                    </template>
+                    <div hidden$="{{!state.Started}}">
+                        Time left: <b>{{_time(left)}}</b>
+                        <div hidden$="{{!you.Spy}}">
+                            <p>
+                                You are the Spy! Try to figure out what everyone else's
+                                location is. Once you know it, shout it out before the timer
+                                runs out, and you win. If the timer runs out and everyone
+                                else doesn't guess you are the Spy, then you win.
+                            </p>
+                        </div>
+                        <div hidden$="{{you.Spy}}">
+                            <p>
+                                You are <b>not</b> the Spy! To find the Spy, the player
+                                with the
+                                <iron-icon icon="star"></iron-icon>
+                                next to their name
+                                asks one person a question relating to your shared location.
+                                The person must answer, trying not to give away the location
+                                to the Spy, and then proceeds to ask another person a question.
+                            </p>
+                            <p>
+                                If everyone agrees on who the spy is before the time runs out,
+                                then the Spy loses. If the Spy reveals themselves and correctly
+                                guesses the location, then the Spy wins.
+                            </p>
+                            <p>Location: {{you.Location}}</p>
+                            <p>Role: {{you.Role}}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Players</h2>
+                    <ul>
+                        <template is="dom-repeat" items="{{state.Players}}">
+                            <li>
                     <span hidden$="{{!item.First}}">
                         <iron-icon icon="star"></iron-icon>
                     </span>
-                        {{name(item)}}
-                        <span hidden$="{{item.Connected}}">
+                                {{name(item)}}
+                                <span hidden$="{{item.Connected}}">
                         <iron-icon icon="warning"></iron-icon>
                     </span>
-                        <span hidden$="{{state.Started}}">
+                                <span hidden$="{{state.Started}}">
                         <span hidden$="{{!item.Ready}}">
                             <iron-icon icon="thumb-up"></iron-icon>
                         </span>
@@ -96,43 +134,45 @@
                             <iron-icon icon="thumb-down"></iron-icon>
                         </span>
                     </span>
-                        <span hidden$="{{!state.Started}}">
+                                <span hidden$="{{!state.Started}}">
                         <span hidden="{{!item.Stop}}">
                             <iron-icon icon="av:stop"></iron-icon>
                         </span>
                     </span>
-                    </li>
-                </template>
-            </ul>
-        </div>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
 
-        <div hidden$="{{state.Started}}">
-            <div hidden$="{{you.Ready}}">
-                <paper-fab icon="thumb-up" on-tap="readyup"></paper-fab>
-            </div>
-            <div hidden$="{{!you.Ready}}">
-                <paper-fab icon="thumb-down" on-tap="readyup"></paper-fab>
-            </div>
-        </div>
-        <div hidden$="{{!state.Started}}">
-            <div hidden$="{{you.Stop}}">
-                <paper-fab icon="av:stop" on-tap="stop"></paper-fab>
-            </div>
-            <div hidden$="{{!you.Stop}}">
-                <paper-fab icon="av:play-arrow" on-tap="stop"></paper-fab>
-            </div>
-        </div>
+                <div hidden$="{{state.Started}}">
+                    <div hidden$="{{you.Ready}}">
+                        <paper-fab icon="thumb-up" on-tap="readyup"></paper-fab>
+                    </div>
+                    <div hidden$="{{!you.Ready}}">
+                        <paper-fab icon="thumb-down" on-tap="readyup"></paper-fab>
+                    </div>
+                </div>
+                <div hidden$="{{!state.Started}}">
+                    <div hidden$="{{you.Stop}}">
+                        <paper-fab icon="av:stop" on-tap="stop"></paper-fab>
+                    </div>
+                    <div hidden$="{{!you.Stop}}">
+                        <paper-fab icon="av:play-arrow" on-tap="stop"></paper-fab>
+                    </div>
+                </div>
 
-        <div class="card">
-            <h2>Locations</h2>
-            <ul>
-                <template is="dom-repeat" items="{{_keys(locations)}}">
-                    <li>
-                        {{item}}
-                    </li>
-                </template>
-            </ul>
-        </div>
+                <div class="card">
+                    <h2>Locations</h2>
+                    <ul>
+                        <template is="dom-repeat" items="{{_keys(locations)}}">
+                            <li>
+                                {{item}}
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </app-header-layout>
+        </app-drawer-layout>
 
         <web-socket id="ws" url="ws://localhost:2015/api/spyfall" ws="{{ws}}"></web-socket>
 
@@ -155,10 +195,6 @@
         Polymer({
             is: 'game-spyfall',
             properties: {
-                tab: {
-                    type: Number,
-                    value: 0
-                },
                 connecting: {
                     type: Boolean,
                     value: false
@@ -194,14 +230,14 @@
                 this.$.lost.close();
 
                 if (!this.inGame) {
-//                    if (this.route.path === '/spyfall') {
+                    if (this.route.path === '') {
                         this.ws.send(JSON.stringify({Type: "NEW", Cmd: {Msg: 'spyfall'}}));
-//                    } else {
-//                        this.ws.send(JSON.stringify({
-//                            Type: "JOIN",
-//                            Cmd: {Msg: this.route.path.split('/').slice(-1)[0]}
-//                        }))
-//                    }
+                    } else {
+                        this.ws.send(JSON.stringify({
+                            Type: "JOIN",
+                            Cmd: {Msg: this.route.path.split('/').slice(-1)[0]}
+                        }));
+                    }
                 }
             },
             onError: function (e) {
@@ -232,7 +268,7 @@
                             }
                             this.countdownHandle = this.async(this.nextCount, this.left % 1000);
                         }
-                        this.set('route.path', '/spyfall/' + this.state.Id);
+                        this.set('route.path', '/' + this.state.Id);
                         break;
                     case 'error':
                         console.log(msg.Msg);
@@ -243,6 +279,9 @@
                         this.$.messages.text = msg.Msg;
                         this.$.messages.open();
                         break;
+                    case 'me':
+                      this.me = msg.Me;
+                      break;
                     default:
                         console.log("GOT MSG:", msg);
                 }
@@ -253,16 +292,26 @@
             _keys: function (obj) {
                 return Object.keys(obj);
             },
+            _time: function(t) {
+              var s = Math.floor(t/1000);
+              var m = Math.floor(s/60);
+              var secs = "0" + s % 60;
+              return "" + m + ":" + secs.substr(secs.length-2);
+            },
             readyup: function () {
                 this.ws.send(JSON.stringify({Type: "READY"}))
             },
             stop: function () {
                 this.ws.send(JSON.stringify({Type: "STOP"}))
             },
-            nextCount: function(){
+            leave: function () {
+                this.ws.send(JSON.stringify({Type: 'LEAVE'}));
+                location.href = '/';
+            },
+            nextCount: function () {
                 this.left = new Date(this.state.EndsAt).getTime() - new Date().getTime();
 
-                if(this.state.Started && this.left > 1000) {
+                if (this.state.Started && this.left > 1000) {
                     this.countdownHandle = this.async(this.nextCount, this.left % 1000);
                 } else {
                     this.countdownHandle = null;

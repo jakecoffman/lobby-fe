@@ -21,7 +21,7 @@
         </style>
         <app-toolbar id="container">
             <iron-image src="../images/user.jpg" style="width:100px; height:100px;" sizing="contain"></iron-image>
-            <span id="name">{{name}}</span>
+            <span id="name">{{user.Name}}</span>
         </app-toolbar>
     </template>
     <script>
@@ -30,20 +30,10 @@
         properties: {
           user: {
             type: Object
-          },
-          name: {
-            type: String,
-            computed: '_name(user)'
           }
         },
         ready: function () {
 
-        },
-        _name: function(user) {
-          if (user.Name == "") {
-            return "Guest " + user.ID.slice(-5);
-          }
-          return user.name;
         }
       })
     </script>
