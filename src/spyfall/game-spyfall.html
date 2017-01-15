@@ -122,8 +122,8 @@
                     <span hidden$="{{!item.First}}">
                         <iron-icon icon="star"></iron-icon>
                     </span>
-                                {{name(item)}}
-                                <span hidden$="{{item.Connected}}">
+                                {{item.User.Name}}
+                                <span hidden$="{{item.User.Connected}}">
                         <iron-icon icon="warning"></iron-icon>
                     </span>
                                 <span hidden$="{{state.Started}}">
@@ -268,7 +268,9 @@
                             }
                             this.countdownHandle = this.async(this.nextCount, this.left % 1000);
                         }
-                        this.set('route.path', '/' + this.state.Id);
+                        if (this.state.Id !== location.hash) {
+                            location.hash = this.state.Id;
+                        }
                         break;
                     case 'error':
                         console.log(msg.Msg);
@@ -285,9 +287,6 @@
                     default:
                         console.log("GOT MSG:", msg);
                 }
-            },
-            name: function (player) {
-                return player.Name ? player.Name : "Guest " + player.ID.slice(-5);
             },
             _keys: function (obj) {
                 return Object.keys(obj);
