@@ -1,5 +1,4 @@
-localhost {
-    root .
+localhost:2015 {
     log stdout
 
     proxy / localhost:8888 {

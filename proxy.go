@@ -33,6 +33,14 @@ func main() {
             "tag": template.HTML("<game-spyfall></game-spyfall>"),
         })
     })
+    r.GET("/speed/*path", func(ctx *gin.Context) {
+        tmpl := template.Must(template.ParseFiles("./index.html"))
+        tmpl.Execute(ctx.Writer, map[string]interface{}{
+            "title": "Speed",
+            "src": "speed/game-speed",
+            "tag": template.HTML("<game-speed></game-speed>"),
+        })
+    })
     r.NoRoute(func (ctx *gin.Context) {
         path := ctx.Request.URL.Path
 

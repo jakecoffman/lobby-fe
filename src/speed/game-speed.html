@@ -1,0 +1,136 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../user-card.html">
+<link rel="import" href="../web-socket.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="game-speed">
+    <template>
+        <style include="shared-styles">
+            :host {
+                --app-primary-color: #7f7a28;
+                --app-secondary-color: #569345;
+                --accent-color: #3f419f;
+
+                display: block;
+            }
+
+            .table {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-top: 15px;
+                padding: 1.5%;
+                box-sizing: border-box;
+            }
+
+            /* playing card */
+            .pc {
+                font-size: 2em;
+                display: inline-block;
+                text-decoration: none;
+                padding: 10px;
+                margin: 8px;
+                border-radius: 5px;
+                background-color: white;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+            }
+
+            .red {
+                color: red;
+            }
+
+            .black {
+                color: black;
+            }
+        </style>
+        <app-location route="{{route}}" use-hash-as-path></app-location>
+        <app-route
+            route="{{route}}"
+            pattern="/:page"
+            data="{{routeData}}"
+            tail="{{subroute}}"></app-route>
+
+        <app-drawer-layout fullbleed>
+            <!-- Drawer content -->
+            <app-drawer>
+                <user-card user="[[me]]"></user-card>
+
+                <div class="drawer-list" style="margin: 0;">
+                    <template is="dom-if" if="{{inGame}}">
+                        <span><a href="" on-tap="leave">Leave game</a></span>
+                    </template>
+                </div>
+            </app-drawer>
+
+            <!-- Main content -->
+            <app-header-layout has-scrolling-region>
+
+                <app-header condenses reveals effects="waterfall">
+                    <app-toolbar>
+                        <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+                        <div main-title>Speed</div>
+                        <span>{{me.Name}}</span>
+                    </app-toolbar>
+                </app-header>
+
+                <h3>Board</h3>
+
+                <div class="table">
+                    <a href="" class="pc red" on-tap="select" data-pos="0">3 ♥</a>
+                    <a href="" class="pc black" on-tap="select" data-pos="1">A ♠</a>
+                </div>
+
+                <h3>Hand</h3>
+
+                <div class="table">
+                    <a href="" class="pc red" on-tap="select" data-pos="0">3 ♥</a>
+                    <a href="" class="pc black" on-tap="select" data-pos="1">A ♠</a>
+                    <a href="" class="pc red" on-tap="select" data-pos="2">K ♦</a>
+                    <a href="" class="pc black" on-tap="select" data-pos="3">Q ♣</a>
+                    <a href="" class="pc black" on-tap="select" data-pos="4">Q ♣</a>
+                    <a href="" class="pc black" on-tap="select" data-pos="5">Q ♣</a>
+                    <a href="" class="pc black" on-tap="select" data-pos="6">Q ♣</a>
+                </div>
+
+            </app-header-layout>
+        </app-drawer-layout>
+
+        <web-socket id="ws" url="ws://localhost:2015/api/spyfall" ws="{{ws}}"></web-socket>
+
+        <paper-toast id="lost" text="Can't connect to server" horizontal-align="right">
+            <a href="" on-tap="connect">Retry</a>
+        </paper-toast>
+        <paper-toast id="errors" text="" horizontal-align="right">
+        </paper-toast>
+        <paper-toast id="messages" text="" duration="3000" horizontal-align="right">
+        </paper-toast>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'game-speed',
+            select: function(e) {
+              var rank = e.target.getAttribute('data-rank');
+              var suit = e.target.getAttribute('data-suit');
+            }
+        });
+    </script>
+</dom-module>
