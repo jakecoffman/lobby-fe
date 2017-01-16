@@ -39,13 +39,12 @@
             },
             connect: function () {
                 var url;
-                if (location.protocol == "https") {
+                if (location.protocol == "https:") {
                     url = "wss://"
                 } else {
                     url = "ws://"
                 }
                 url += window.location.host + this.path;
-                console.log(url);
                 this.ws = new WebSocket(url);
                 this.ws.onerror = this.onError.bind(this);
                 this.ws.onclose = this.onClose.bind(this);

@@ -1,6 +1,7 @@
-:80 {
+:443 {
     root .
     log stdout
+    tls self_signed
 
     proxy /api localhost:8444 {
         transparent
