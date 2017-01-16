@@ -3,48 +3,55 @@
 
     </template>
     <script>
-      Polymer({
-        is: "web-socket",
-        properties: {
-          ws: {
-            type: Object,
-            notify: true
-          },
-          protocol: {
-            type: String
-          },
-          url: {
-            type: String
-          }
-        },
-        ready: function () {
-        },
-        onError: function (error) {
-          this.fire('onerror', error);
-        },
-        onClose: function (event) {
-          this.fire('onclose', event);
-        },
-        onOpen: function (event) {
-          this.fire('onopen', event);
-        },
-        onMessage: function (event) {
-          this.fire('onmessage', JSON.parse(event.data));
-        },
-        send: function (message) {
-          this.ws.send(message);
-        },
-        close: function () {
-          this.ws.close();
-        },
-        connect: function() {
-            console.log("Connecting", this.url);
-          this.ws = new WebSocket(this.url);
-          this.ws.onerror = this.onError.bind(this);
-          this.ws.onclose = this.onClose.bind(this);
-          this.ws.onopen = this.onOpen.bind(this);
-          this.ws.onmessage = this.onMessage.bind(this);
-        }
-      })
+        Polymer({
+            is: "web-socket",
+            properties: {
+                ws: {
+                    type: Object,
+                    notify: true
+                },
+                protocol: {
+                    type: String
+                },
+                path: {
+                    type: String
+                }
+            },
+            ready: function () {
+            },
+            onError: function (error) {
+                this.fire('onerror', error);
+            },
+            onClose: function (event) {
+                this.fire('onclose', event);
+            },
+            onOpen: function (event) {
+                this.fire('onopen', event);
+            },
+            onMessage: function (event) {
+                this.fire('onmessage', JSON.parse(event.data));
+            },
+            send: function (message) {
+                this.ws.send(message);
+            },
+            close: function () {
+                this.ws.close();
+            },
+            connect: function () {
+                var url;
+                if (location.protocol == "https") {
+                    url = "wss://"
+                } else {
+                    url = "ws://"
+                }
+                url += window.location.host + this.path;
+                console.log(url);
+                this.ws = new WebSocket(url);
+                this.ws.onerror = this.onError.bind(this);
+                this.ws.onclose = this.onClose.bind(this);
+                this.ws.onopen = this.onOpen.bind(this);
+                this.ws.onmessage = this.onMessage.bind(this);
+            }
+        })
     </script>
 </dom-module>
