@@ -1,27 +1,26 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
-<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
-<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
-<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
-<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
-<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
-<link rel="import" href="../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../bower_components/app-route/app-route.html">
-<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
-<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
-<link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
-<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
-<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 
-<link rel="import" href="../user-card.html">
-<link rel="import" href="../web-socket.html">
-<link rel="import" href="../shared-styles.html">
+<link rel="import" href="user-card.html">
+<link rel="import" href="web-socket.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="page-spyfall.html">
 
-<dom-module id="game-spyfall">
+<dom-module id="page-spyfall">
     <template>
         <style include="shared-styles">
             :host {
@@ -32,21 +31,15 @@
                 display: block;
             }
         </style>
-        <app-location route="{{route}}" use-hash-as-path></app-location>
-        <app-route
-            route="{{route}}"
-            pattern="/:page"
-            data="{{routeData}}"
-            tail="{{subroute}}"></app-route>
 
         <app-drawer-layout fullbleed>
             <!-- Drawer content -->
-            <app-drawer>
+            <app-drawer swipe-open>
                 <user-card user="[[me]]"></user-card>
 
                 <div class="drawer-list" style="margin: 0;">
                     <template is="dom-if" if="{{inGame}}">
-                        <span><a href="" on-tap="leave">Leave game</a></span>
+                        <span><a href="#/" on-tap="leave">Leave game</a></span>
                     </template>
                 </div>
             </app-drawer>
@@ -185,15 +178,13 @@
         <paper-toast id="lost" text="Can't connect to server" horizontal-align="right">
             <a href="" on-tap="connect">Retry</a>
         </paper-toast>
-        <paper-toast id="errors" text="" horizontal-align="right">
-        </paper-toast>
-        <paper-toast id="messages" text="" duration="3000" horizontal-align="right">
-        </paper-toast>
+        <paper-toast id="errors" text="" horizontal-align="right"></paper-toast>
+        <paper-toast id="messages" text="" duration="3000" horizontal-align="right"></paper-toast>
     </template>
 
     <script>
         Polymer({
-            is: 'game-spyfall',
+            is: 'page-spyfall',
             properties: {
                 connecting: {
                     type: Boolean,
@@ -203,22 +194,24 @@
                     type: Boolean,
                     value: false
                 },
+                route: Object,
                 left: {
                     type: Number,
                     value: 0.0
                 }
             },
+            behaviors: [CommonBehavior],
             listeners: {
                 onopen: 'onOpen',
                 onclose: 'onClose',
                 onmessage: 'onMessage'
             },
             countdownHandle: null,
-            _neq: function (a, b) {
-                return a !== b;
-            },
             ready: function () {
                 this.connect();
+            },
+            detached: function () {
+                this.ws.close();
             },
             connect: function () {
                 this.connecting = true;
@@ -230,7 +223,7 @@
                 this.$.lost.close();
 
                 if (!this.inGame) {
-                    if (this.route.path === '') {
+                    if (this.route.path === '/spyfall') {
                         this.ws.send(JSON.stringify({Type: "NEW", Cmd: {Msg: 'spyfall'}}));
                     } else {
                         this.ws.send(JSON.stringify({
@@ -269,7 +262,7 @@
                             this.countdownHandle = this.async(this.nextCount, this.left % 1000);
                         }
                         if (this.state.Id !== location.hash) {
-                            location.hash = this.state.Id;
+                            location.hash = '/spyfall/' + this.state.Id;
                         }
                         break;
                     case 'error':
@@ -288,9 +281,7 @@
                         console.log("GOT MSG:", msg);
                 }
             },
-            _keys: function (obj) {
-                return Object.keys(obj);
-            },
+
             _time: function(t) {
               var s = Math.floor(t/1000);
               var m = Math.floor(s/60);
@@ -305,7 +296,6 @@
             },
             leave: function () {
                 this.ws.send(JSON.stringify({Type: 'LEAVE'}));
-                location.href = '/';
             },
             nextCount: function () {
                 this.left = new Date(this.state.EndsAt).getTime() - new Date().getTime();
